@@ -1,45 +1,55 @@
-const { log } = require('console');
+// Import required modules
 const express = require('express');
 const path = require('path');
-require("./db/conn");
-const User = require("./models/usermessage")
 const hbs = require('hbs');
 
-const app = express();
-const port = process.env.port || 3000;
+// Database connection
+require("./db/conn");
 
-// setting the path
+// Import the User model
+const User = require("./models/usermessage");
+
+const app = express();
+
+// Set static and template paths
 const staticpath = path.join(__dirname, "../public");
 const templatepath = path.join(__dirname, "../templates/views");
 const partialpath = path.join(__dirname, "../templates/partials");
 
-// middleware
+// Middleware to serve Bootstrap and jQuery from node_modules
 app.use('/css', express.static(path.join(__dirname, "../node_modules/bootstrap/dist/css")));
 app.use('/js', express.static(path.join(__dirname, "../node_modules/bootstrap/dist/js")));
 app.use('/jq', express.static(path.join(__dirname, "../node_modules/jquery/dist")));
 
-app.use(express.urlencoded({extended: false}));
+// Middleware to parse URL-encoded bodies (from form submissions)
+app.use(express.urlencoded({ extended: false }));
+
+// Serve static files (HTML, CSS, JS) from the public directory
 app.use(express.static(staticpath));
+
+// Set up the view engine as hbs (Handlebars)
 app.set("view engine", "hbs");
 app.set("views", templatepath);
+
+// Register partials for hbs (Handlebars)
 hbs.registerPartials(partialpath);
 
-app.get("/", function(req, res){
-    res.render("index");
-})
+// Route for the homepage
+app.get("/", (req, res) => {
+    res.render("index"); // Render the index.hbs view
+});
 
-app.post("/contact", async(req, res) =>{
-  try{
-    // res.send(req.body);
-    const userData = new User(req.body);
-    await userData.save();
-    res.status(201).render("index");
-  }
-  catch(error){
-    res.status(500).send(error);
-  }
-})
+// Route to handle form submissions on the /contact page
+app.post("/contact", async (req, res) => {
+    try {
+        // Create a new user message from the request body
+        const userData = new User(req.body);
+        await userData.save(); // Save the data to the database
+        res.status(201).render("index"); // Render the index page after successful save
+    } catch (error) {
+        res.status(500).send(error); // Handle errors
+    }
+});
 
-app.listen(port, function(){
-    console.log(`Server is running at port ${port}`);
-})
+// Export the app instance for use in server.js
+module.exports = app; // Make sure to export the app

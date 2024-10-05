@@ -1,10 +1,15 @@
-const mongoose = require("mongoose");
+require('dotenv').config(); // Load environment variables from .env file
 
-// creating a database
-const DB = 'mongodb+srv://kysvamsi:kysvamsitechnovate@cluster0.bqvubqh.mongodb.net/technovate?retryWrites=true&w=majority';
+const mongoose = require('mongoose');
 
-mongoose.connect(DB, {}).then(() => {
-    console.log("Connection Successful");
-}).catch((error) => {
-    console.log(error);
+// Suppress the Mongoose deprecation warning
+mongoose.set('strictQuery', false);
+
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 })
+.then(() => console.log('MongoDB Connected'))
+.catch(err => console.error('MongoDB connection error:', err.message));
+
+module.exports = mongoose.connection;
